@@ -7,6 +7,7 @@ import platform
 import glob
 import os, sys, subprocess, codecs, webbrowser
 from subprocess import Popen, PIPE
+import tempfile
 
 try:
   import commands
@@ -36,7 +37,7 @@ class FormatEslintCommand(sublime_plugin.TextCommand):
 
     buffer_text = self.get_buffer_text(entire_buffer_region)
 
-    output = self.run_script_on_file(self.view.file_name())
+    output = self.run_script_on_string(buffer_text)
 
     # log output in debug mode
     if PluginUtils.get_pref("debug"):
@@ -66,6 +67,51 @@ class FormatEslintCommand(sublime_plugin.TextCommand):
   def get_buffer_text(self, region):
     buffer_text = self.view.substr(region)
     return buffer_text
+
+  def run_script_on_string(self, buffer_text):
+    with tempfile.NamedTemporaryFile() as tf:
+      tf.write(bytes(buffer_text, 'UTF-8'))
+      tf.seek(0)
+
+      try:
+        if self.view.file_name():
+          dirname = os.path.dirname(self.view.file_name())
+        else:
+          dirname = "/"
+
+        node_path = PluginUtils.get_node_path()
+        eslint_path = PluginUtils.get_eslint_path(dirname)
+
+        if eslint_path == False:
+          sublime.error_message('ESLint could not be found on your path')
+          return;
+
+        cmd = [node_path, eslint_path, '--fix', tf.name]
+
+        config_path = PluginUtils.get_pref("config_path")
+
+        if os.path.isfile(config_path):
+          # If config file path exists, use as is
+          full_config_path = config_path
+        else:
+          # Find config gile relative to project path
+          project_path = PluginUtils.project_path()
+          full_config_path = os.path.join(project_path, config_path)
+
+        if os.path.isfile(full_config_path):
+          print("Using configuration from {0}".format(full_config_path))
+          cmd.extend(["--config", full_config_path])
+
+        output = PluginUtils.get_output(cmd, dirname, '')
+
+        return output;
+
+      except:
+        # Something bad happened.
+        msg = str(sys.exc_info()[1])
+        print("Unexpected error({0}): {1}".format(sys.exc_info()[0], msg))
+        sublime.error_message(msg)
+
 
   def run_script_on_file(self, data):
     try:
