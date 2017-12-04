@@ -88,7 +88,18 @@ class FormatEslintCommand(sublime_plugin.TextCommand):
 
         cmd = [node_path, eslint_path, '--fix', tf.name]
 
-        config_path = PluginUtils.get_pref("config_path")
+        if PluginUtils.get_pref("config_path"):
+          config_path = PluginUtils.get_pref("config_path")
+        if PluginUtils.get_pref("config_file_name"):
+          if dirname is not '/':
+            config_path = PluginUtils.findup(PluginUtils.get_pref("config_file_name"), dirname)
+          else:
+            config_path = PluginUtils.findup(PluginUtils.get_pref("config_file_name"))
+        else:
+          if dirname is not '/':
+            config_path = PluginUtils.findup('.eslintrc', dirname)
+          else:
+            config_path = PluginUtils.findup('.eslintrc')
 
         if os.path.isfile(config_path):
           # If config file path exists, use as is
@@ -112,8 +123,8 @@ class FormatEslintCommand(sublime_plugin.TextCommand):
         print("Unexpected error({0}): {1}".format(sys.exc_info()[0], msg))
         sublime.error_message(msg)
 
-
   def run_script_on_file(self, data):
+    """deprecated but left for backwards compat"""
     try:
       dirname = os.path.dirname(data)
       node_path = PluginUtils.get_node_path()
