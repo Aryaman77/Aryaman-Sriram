@@ -43,9 +43,6 @@ class FormatEslintCommand(sublime_plugin.TextCommand):
     if PluginUtils.get_pref("debug"):
       print(output)
 
-    return
-    # eslint currently does not print the fixed file to stdout, it just modifies the file.
-
     # If the prettified text length is nil, the current syntax isn't supported.
     if output == None or len(output) < 1:
       return
@@ -118,8 +115,9 @@ class FormatEslintCommand(sublime_plugin.TextCommand):
         print (cmd)
 
         output = PluginUtils.get_output(cmd, dirname, '')
+        tf.seek(0)
 
-        return output;
+        return tf.read().decode('UTF-8');
 
       except:
         # Something bad happened.
