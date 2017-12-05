@@ -86,7 +86,7 @@ class FormatEslintCommand(sublime_plugin.TextCommand):
           sublime.error_message('ESLint could not be found on your path')
           return;
 
-        cmd = [node_path, eslint_path, '--fix', tf.name]
+        cmd = [node_path, eslint_path, '--fix']
 
         if PluginUtils.get_pref("config_path"):
           config_path = PluginUtils.get_pref("config_path")
@@ -112,6 +112,10 @@ class FormatEslintCommand(sublime_plugin.TextCommand):
         if os.path.isfile(full_config_path):
           print("Using configuration from {0}".format(full_config_path))
           cmd.extend(["--config", full_config_path])
+
+        # file to fix goes at the end
+        cmd.extend([tf.name])
+        print (cmd)
 
         output = PluginUtils.get_output(cmd, dirname, '')
 
