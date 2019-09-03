@@ -1,0 +1,17 @@
+<html>
+<head>
+<title>Crocodiles</title>
+</head>
+<body>
+$("#croc-form").on("submit", function(event) {
+   event.preventDefault();
+var $crocSpeccies = $('#croc-form [name=species]"); //scope
+$(this).find("[name=species]"); //scoped
+     var CrocSpecies = $crocSpecies.val();
+     var $img = $("<img>")
+     $img.width(100);
+     $img.attr("src", crocImages[crocSpecies]);
+     $img.appendTo("body");
+</script>
+</body>
+</html>
